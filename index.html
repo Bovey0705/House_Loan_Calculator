@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房贷计算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>房贷计算器</h1>
+        <label for="loan-type">选择贷款类型:</label>
+        <select id="loan-type" onchange="changeLoanType()">
+            <option value="commercial">商业贷款</option>
+            <option value="accumulation">公积金贷款</option>
+            <option value="combination">组合贷款</option>
+        </select>
+        
+        <div id="commercial-loan" class="loan-form">
+            <label for="total-loan">商业贷款总额 (万元):</label>
+            <input type="number" id="total-loan" placeholder="请输入贷款总额" step="0.01">
+            <label for="annual-rate">商业贷款年利率 (例如: 0.0325 表示 3.25%):</label>
+            <input type="number" id="annual-rate" step="0.0001" placeholder="请输入年利率" value="0.0325">
+            <label for="years">贷款年限:</label>
+            <input type="number" id="years" placeholder="请输入贷款年限">
+            <label for="repayment-type">选择还款方式:</label>
+            <select id="repayment-type">
+                <option value="equal_principal">等额本金</option>
+                <option value="equal_interest">等额本息</option>
+            </select>
+            <button onclick="calculateCommercialLoan()">计算</button>
+        </div>
+
+        <div id="accumulation-loan" class="loan-form" style="display: none;">
+            <label for="total-loan-accumulation">公积金贷款总额 (万元):</label>
+            <input type="number" id="total-loan-accumulation" placeholder="请输入公积金贷款总额" step="0.01">
+            <label for="annual-rate-accumulation">公积金贷款年利率 (例如: 0.0285 表示 2.85%):</label>
+            <input type="number" id="annual-rate-accumulation" step="0.0001" placeholder="请输入年利率" value="0.0285">
+            <label for="years-accumulation">贷款年限:</label>
+            <input type="number" id="years-accumulation" placeholder="请输入贷款年限">
+            <label for="repayment-type-accumulation">选择还款方式:</label>
+            <select id="repayment-type-accumulation">
+                <option value="equal_principal">等额本金</option>
+                <option value="equal_interest">等额本息</option>
+            </select>
+            <button onclick="calculateAccumulationLoan()">计算</button>
+        </div>
+        
+        <div id="combination-loan" class="loan-form" style="display:none;">
+            <label for="total-loan1">商业贷款总额:</label>
+            <input type="number" id="total-loan1" placeholder="请输入商业贷款总额">
+            <label for="annual-rate1">商业贷款年利率 (例如: 0.0325 表示 3.25%):</label>
+            <input type="number" id="annual-rate1" step="0.0001" placeholder="请输入商业贷款年利率" value="0.0325">
+            <label for="total-loan2">公积金贷款总额:</label>
+            <input type="number" id="total-loan2" placeholder="请输入公积金贷款总额">
+            <label for="annual-rate2">公积金贷款年利率 (例如: 0.0285 表示 2.85%):</label>
+            <input type="number" id="annual-rate2" step="0.0001" placeholder="请输入公积金贷款年利率" value="0.0285">
+            <label for="years2">贷款年限:</label>
+            <input type="number" id="years2" placeholder="请输入贷款年限">
+            <label for="repayment-type2">选择还款方式:</label>
+            <select id="repayment-type2">
+                <option value="equal_principal">等额本金</option>
+                <option value="equal_interest">等额本息</option>
+            </select>
+            <button onclick="calculateCombinationLoan()">计算</button>
+        </div>
+        
+        <div id="result" class="result"></div>
+    </div>
+    
+    <script>
+        function changeLoanType() {
+            const loanType = document.getElementById("loan-type").value;
+            if (loanType === "commercial") {
+                document.getElementById("commercial-loan").style.display = "block";
+                document.getElementById("accumulation-loan").style.display = "none";
+                document.getElementById("combination-loan").style.display = "none";
+            } else if (loanType === "accumulation") {
+                document.getElementById("commercial-loan").style.display = "none";
+                document.getElementById("accumulation-loan").style.display = "block";
+                document.getElementById("combination-loan").style.display = "none";
+            } else {
+                document.getElementById("commercial-loan").style.display = "none";
+                document.getElementById("accumulation-loan").style.display = "none";
+                document.getElementById("combination-loan").style.display = "block";
+            }
+        }
+
+        function calculateCommercialLoan() {
+            const totalLoan = parseFloat(document.getElementById("total-loan").value) * 10000;
+            const annualRate = parseFloat(document.getElementById("annual-rate").value);
+            const years = parseInt(document.getElementById("years").value);
+            const repaymentType = document.getElementById("repayment-type").value;
+
+            let result = {};
+            if (repaymentType === "equal_principal") {
+                result = calculateEqualPrincipalLoan(totalLoan, annualRate, years);
+                document.getElementById("result").innerHTML = `商业贷款 (等额本金):<br>第一个月还款额: ${result.firstMonthPayment} 元<br>最后一个月还款额: ${result.lastMonthPayment} 元<br>总还款额: ${result.totalPayment} 元<br>每月递减额: ${result.monthlyDecrease} 元`;
+            } else if (repaymentType === "equal_interest") {
+                result = calculateEqualInterestLoan(totalLoan, annualRate, years);
+                document.getElementById("result").innerHTML = `商业贷款 (等额本息):<br>每月还款额: ${result.monthlyPayment} 元<br>总还款额: ${result.totalPayment} 元`;
+            }
+        }
+
+        function calculateAccumulationLoan() {
+            const totalLoan = parseFloat(document.getElementById("total-loan-accumulation").value) * 10000;
+            const annualRate = parseFloat(document.getElementById("annual-rate-accumulation").value);
+            const years = parseInt(document.getElementById("years-accumulation").value);
+            const repaymentType = document.getElementById("repayment-type-accumulation").value;
+
+            let result = {};
+            if (repaymentType === "equal_principal") {
+                result = calculateEqualPrincipalLoan(totalLoan, annualRate, years);
+                document.getElementById("result").innerHTML = `公积金贷款 (等额本金):<br>第一个月还款额: ${result.firstMonthPayment} 元<br>最后一个月还款额: ${result.lastMonthPayment} 元<br>总还款额: ${result.totalPayment} 元<br>每月递减额: ${result.monthlyDecrease} 元`;
+            } else if (repaymentType === "equal_interest") {
+                result = calculateEqualInterestLoan(totalLoan, annualRate, years);
+                document.getElementById("result").innerHTML = `公积金贷款 (等额本息):<br>每月还款额: ${result.monthlyPayment} 元<br>总还款额: ${result.totalPayment} 元`;
+            }
+        }
+
+        function calculateCombinationLoan() {
+            const totalLoan1 = parseFloat(document.getElementById("total-loan1").value) * 10000;
+            const annualRate1 = parseFloat(document.getElementById("annual-rate1").value);
+            const totalLoan2 = parseFloat(document.getElementById("total-loan2").value) * 10000;
+            const annualRate2 = parseFloat(document.getElementById("annual-rate2").value);
+            const years = parseInt(document.getElementById("years2").value);
+            const repaymentType2 = document.getElementById("repayment-type2").value;
+
+            // 计算商业贷款部分的还款额
+            const commercialResult1 = calculateEqualPrincipalLoan(totalLoan1, annualRate1, years);
+            const commercialResult2 = calculateEqualInterestLoan(totalLoan1, annualRate1, years);
+
+            // 计算公积金贷款部分的还款额
+            const accumulationResult1 = calculateEqualPrincipalLoan(totalLoan2, annualRate2, years);
+            const accumulationResult2 = calculateEqualInterestLoan(totalLoan2, annualRate2, years);
+
+            // 如果是等额本息，直接显示每月还款额
+            if (repaymentType2 === "equal_interest") {
+                document.getElementById("result").innerHTML = `组合贷款 (等额本息):<br>商业贷款部分:<br>每月还款额: ${commercialResult2.monthlyPayment} 元<br>总还款额: ${commercialResult2.totalPayment} 元<br><br>公积金贷款部分:<br>每月还款额: ${accumulationResult2.monthlyPayment} 元<br>总还款额: ${accumulationResult2.totalPayment} 元`;
+            } else if (repaymentType2 === "equal_principal") { // 如果是等额本金，需要额外计算每月递减额
+                document.getElementById("result").innerHTML = `组合贷款 (等额本金):<br>商业贷款部分:<br>第一个月还款额: ${commercialResult1.firstMonthPayment} 元<br>最后一个月还款额: ${commercialResult1.lastMonthPayment} 元<br>总还款额: ${commercialResult1.totalPayment} 元<br>每月递减额: ${commercialResult1.monthlyDecrease} 元<br><br>公积金贷款部分:<br>第一个月还款额: ${accumulationResult1.firstMonthPayment} 元<br>最后一个月还款额: ${accumulationResult1.lastMonthPayment} 元<br>总还款额: ${accumulationResult1.totalPayment} 元<br>每月递减额: ${accumulationResult1.monthlyDecrease} 元`;
+            }
+        }
+
+        function calculateEqualPrincipalLoan(totalLoan, annualRate, years) {
+            const monthlyRate = annualRate / 12;
+            const months = years * 12;
+            const monthlyPrincipal = totalLoan / months;
+            const firstMonthPayment = monthlyPrincipal + totalLoan * monthlyRate;
+            const lastMonthPayment = monthlyPrincipal + (totalLoan - (months - 1) * monthlyPrincipal) * monthlyRate;
+            const totalPayment = (totalLoan * monthlyRate * (months + 1)) / 2 + totalLoan;
+            const monthlyDecrease = (totalLoan - (months - 1) * monthlyPrincipal) * monthlyRate;
+            
+            return {
+                firstMonthPayment: firstMonthPayment.toFixed(2),
+                lastMonthPayment: lastMonthPayment.toFixed(2),
+                totalPayment: formatNumber(totalPayment.toFixed(2)),
+                monthlyDecrease: formatNumber(monthlyDecrease.toFixed(2))
+            };
+        }
+
+        function calculateEqualInterestLoan(totalLoan, annualRate, years) {
+            const monthlyRate = annualRate / 12;
+            const months = years * 12;
+            const monthlyPayment = totalLoan * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+            const totalPayment = monthlyPayment * months;
+            const monthlyDecrease = 0; // 在等额本息还款中，每月递减额为 0
+            
+            return {
+                monthlyPayment: formatNumber(monthlyPayment.toFixed(2)),
+                totalPayment: formatNumber(totalPayment.toFixed(2)),
+                monthlyDecrease: formatNumber(monthlyDecrease.toFixed(2))
+            };
+        }
+
+        function formatNumber(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+    </script>
+</body>
+</html>
